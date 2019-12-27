@@ -2,6 +2,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <memory.h>
 
 // Include the main libnx system header, for Switch development
 #include <switch.h>
@@ -87,7 +88,11 @@ void startAuthApplet(char* url) {
     Result rc=0;
     // TODO: Move to libnx impl once its in a stable release
     WebWifiConfig config;
-    webWifiCreate(&config, NULL, url, 0 , 0);
+    
+    Uuid zero;
+    memset(&zero, 0, sizeof(Uuid));
+    
+    webWifiCreate(&config, NULL, url, zero , 0);
     WebWifiReturnValue out;
     rc = webWifiShow(&config, &out);
     if(R_FAILED(rc)) {
@@ -118,7 +123,7 @@ int main(int argc, char* argv[])
         bool isPatched = false;
         svcGetProcessList(&pCount, pids, 100);
         while (i <= pCount-1) {
-            pminfoGetTitleId(&cId, pids[i]);
+            pminfoGetProgramId(&cId, pids[i]);
             if(cId == 0x00FF747765616BFF || cId == 0x01FF415446660000) {
                 printf(CONSOLE_GREEN "Supernag enabled, but patched via switch-sys-tweak!\n");
                 isPatched = true;
@@ -192,7 +197,7 @@ int main(int argc, char* argv[])
         if (R_FAILED(rc))
             showError("Error starting Browser\nLookup error code for more info", "", rc);
     } else { // Running under applet
-        showError("Running in applet mode\nPlease launch hbmenu by holding R on an APP (e.g. a game) NOT an applet (e.g. Gallery)", "", 0);
+        startAuthApplet(url);
     }
     return 0;
 }
